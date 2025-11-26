@@ -15,6 +15,44 @@ The raw gene-level read count matrix was downloaded as a compressed CSV file (GS
 
 The count matrix was imported into R using `read.csv()`, converted into a numerical matrix, and used as the input for downstream quality control, principal component analysis (PCA), and differential gene expression analysis.
 
+```{r Data Preparation, echo=FALSE, message=FALSE, warning=FALSE, fig.width=6, fig.height=5}
+
+library(DESeq2)
+library(stringr)
+
+# Load the count matrix
+
+expr <- read.csv("GSE247367_raw_read_counts.csv.gz", row.names = 1)
+expr <- as.matrix(expr)
+
+# Create metadata
+
+sample_names <- colnames(expr)
+meta <- data.frame(
+sample_id = sample_names,
+condition = ifelse(str_detect(sample_names, "CTRL"), "CTRL", "TSC"),
+row.names = sample_names,
+stringsAsFactors = FALSE
+)
+meta$condition <- factor(meta$condition)
+meta$condition <- relevel(meta$condition, ref = "CTRL")
+
+# Create DESeq2 dataset
+
+dds <- DESeqDataSetFromMatrix(
+countData = expr,
+colData = meta,
+design = ~ condition
+)
+
+# Optional: filter out low-count genes
+
+keep <- rowSums(counts(dds)) >= 10
+dds <- dds[keep, ]
+
+```
+
+
 
 ## Quality Control
 
