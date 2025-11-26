@@ -1,0 +1,62 @@
+---
+title: "Project Analysis"
+output: html_document
+---
+
+## Introduction
+
+
+
+## Data Download
+
+Bulk RNA-seq data are obtained from the publicly available Gene Expression Omnibus (GEO) dataset GSE247367. This dataset contains raw read count data generated from human cortical organoids carrying pathogenic TSC2 variants and matched control organoids.
+
+The raw gene-level read count matrix was downloaded as a compressed CSV file (GSE247367_raw_read_counts.csv.gz) from the GEO accession page. This file contains integer read counts for 32,486 genes across 80 samples.
+
+The count matrix was imported into R using `read.csv()`, converted into a numerical matrix, and used as the input for downstream quality control, principal component analysis (PCA), and differential gene expression analysis.
+
+
+## Quality Control
+
+Initial quality control was performed on the raw count matrix to ensure data integrity prior to downstream analysis. The dataset consisted of 32,486 genes and 80 samples. Library sizes (total read counts per sample) ranged from approximately 27 million to 91 million reads, indicating sufficient sequencing depth across all samples.
+
+Gene-level expression summaries confirmed a wide dynamic range of expression values, consistent with high-quality bulk RNA-seq data. No missing values (NA) were detected in the count matrix.
+
+All counts were confirmed to be non-negative integers, meeting the input requirements for DESeq2-based normalization and differential expression analysis. These results indicate that the dataset passed initial quality control checks.
+
+
+## Principal Component Analysis
+
+Principal Component Analysis (PCA) was performed on variance-stabilized gene expression data to assess global patterns of similarity and variability among samples. PCA reduces high-dimensional gene expression data into a smaller number of principal components that capture the largest sources of variance in the dataset.
+
+This analysis was used as a quality control step to evaluate whether control and TSC samples separate based on global transcriptional profiles, whether biological replicates cluster together, and whether any potential outlier samples or batch effects are present.
+
+```{r PCA_plot, echo=FALSE, message=FALSE, warning=FALSE, fig.width=6, fig.height=5}
+library(DESeq2)
+library(ggplot2)
+
+# Make sure your DESeq2 object (dds) and meta are already defined
+vsd <- vst(dds, blind = TRUE)
+
+# Compute PCA
+pcaData <- plotPCA(vsd, intgroup = "condition", returnData = TRUE)
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+
+# Plot
+ggplot(pcaData, aes(x = PC1, y = PC2, color = condition)) +
+  geom_point(size = 3) +
+  xlab(paste0("PC1: ", percentVar[1], "% variance")) +
+  ylab(paste0("PC2: ", percentVar[2], "% variance")) +
+  theme_minimal() +
+  ggtitle("PCA of GSE247367 Bulk RNA-seq")
+```
+
+## Differential Expression
+
+
+
+## Visualization
+
+
+
+## Interpretation
